@@ -131,6 +131,43 @@
     </div>
 
     <script>
+        // On-screen logger console for mobile debugging
+        (function() {
+            const logBox = document.createElement('div');
+            logBox.id = 'debug-console';
+            logBox.style.cssText = 'position:fixed;bottom:60px;left:5%;width:90%;max-height:120px;overflow-y:auto;background:rgba(0,0,0,0.85);color:#00ff00;font-family:monospace;font-size:10px;z-index:9999;padding:6px;border:1px solid #333;border-radius:8px;pointer-events:none;';
+            document.body.appendChild(logBox);
+
+            const appendLog = (msg, color = '#00ff00') => {
+                const p = document.createElement('p');
+                p.style.margin = '2px 0';
+                p.style.color = color;
+                p.textContent = msg;
+                logBox.appendChild(p);
+                logBox.scrollTop = logBox.scrollHeight;
+            };
+
+            const origLog = console.log;
+            console.log = function(...args) {
+                origLog.apply(console, args);
+                appendLog('[LOG] ' + args.join(' '));
+            };
+
+            const origErr = console.error;
+            console.error = function(...args) {
+                origErr.apply(console, args);
+                appendLog('[ERR] ' + args.join(' '), '#ff4444');
+            };
+
+            const origWarn = console.warn;
+            console.warn = function(...args) {
+                origWarn.apply(console, args);
+                appendLog('[WRN] ' + args.join(' '), '#ffaa00');
+            };
+            
+            console.log("Console Debugger inicializado no condomino.");
+        })();
+
         // Parse unit ID from URL query parameter
         const urlParams = new URLSearchParams(window.location.search);
         const unitId = urlParams.get('unit');
