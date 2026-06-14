@@ -285,11 +285,17 @@
 
             // Dial P2P
             try {
-                const targetPeerId = 'portaria_digital_casa_' + unitId;
+                const targetUnit = unitsData.find(u => u.id === unitId);
+                const targetPeerId = targetUnit ? targetUnit.peer_id : null;
+                
+                if (!targetPeerId) {
+                    throw new Error("Morador sem ID ativo");
+                }
+                
                 await webrtcHandler.makeCall(targetPeerId);
             } catch (err) {
                 console.error("Calling peer failed", err);
-                document.getElementById('call-status').textContent = 'Morador Ocupado/Indisponível';
+                document.getElementById('call-status').textContent = 'Morador Indisponível (Sem Sinal)';
                 audioHelper.stop();
                 setTimeout(closeCallModal, 3000);
             }

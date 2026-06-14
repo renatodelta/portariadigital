@@ -139,7 +139,6 @@
             window.location.href = 'index.html';
         }
 
-        const peerId = 'portaria_digital_casa_' + unitId;
         document.getElementById('display-house-name').textContent = 'Casa ' + unitId;
 
         // PWA Service Worker
@@ -170,14 +169,18 @@
             }
         });
 
+        let currentPeerId = null;
+
         // Initialize WebRTC Handlers
-        webrtcHandler.onConnectionStatus = (status, errorType) => {
+        webrtcHandler.onConnectionStatus = (status, errorType, generatedPeerId) => {
             const badge = document.getElementById('peer-status');
             const appStatus = document.getElementById('app-status');
             if (status === 'online') {
                 badge.className = 'badge badge-success';
                 badge.textContent = 'Online';
                 appStatus.textContent = 'Aplicativo Conectado à Central';
+                currentPeerId = generatedPeerId;
+                sendPing(); // Ping immediately on connection open
             } else {
                 badge.className = 'badge badge-danger';
                 badge.textContent = 'Erro';
@@ -216,17 +219,18 @@
             audioHelper.stop();
         };
 
-        webrtcHandler.init(peerId);
+        // Initialize PeerJS without a fixed ID (forces dynamic generated ID)
+        webrtcHandler.init();
 
         // Ping backend to let portaria know we are active
         async function sendPing() {
+            if (!currentPeerId) return;
             try {
-                await fetch(`/api?action=ping&unit_id=${unitId}&peer_id=${peerId}`);
+                await fetch(`/api?action=ping&unit_id=${unitId}&peer_id=${currentPeerId}`);
             } catch (err) {
                 console.error("Ping error:", err);
             }
         }
-        sendPing();
         setInterval(sendPing, 4000);
 
         function acceptCall() {

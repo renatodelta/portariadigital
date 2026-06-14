@@ -33,7 +33,7 @@ class WebRTCHandler {
 
         this.peer.on('open', (id) => {
             console.log('Connected to signaling server. My Peer ID is:', id);
-            if (this.onConnectionStatus) this.onConnectionStatus('online');
+            if (this.onConnectionStatus) this.onConnectionStatus('online', null, id);
         });
 
         this.peer.on('error', (err) => {
