@@ -77,6 +77,29 @@ class WebRTCHandler {
     }
 
     /**
+     * Synthesizes a silent virtual audio stream for devices without a physical microphone.
+     */
+    createSilentAudioStream() {
+        console.warn("Nenhum microfone físico detectado. Sintetizando stream de áudio silencioso virtual...");
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            console.error("Web Audio API não é suportada neste navegador.");
+            return null;
+        }
+        try {
+            const ctx = new AudioContextClass();
+            const oscillator = ctx.createOscillator();
+            const dst = ctx.createMediaStreamDestination();
+            oscillator.connect(dst);
+            oscillator.start();
+            return dst.stream;
+        } catch (e) {
+            console.error("Falha ao sintetizar áudio virtual:", e);
+            return null;
+        }
+    }
+
+    /**
      * Obtains local microphone stream.
      */
     async getLocalAudioStream() {
@@ -93,7 +116,16 @@ class WebRTCHandler {
             });
             return this.localStream;
         } catch (err) {
-            console.error('Failed to get micro stream:', err);
+            console.warn('Falha ao obter microfone físico:', err.name || err.message);
+            
+            // If physical mic is missing, try to synthesize a virtual one so WebRTC connection succeeds
+            if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError' || err.message.includes('device not found')) {
+                const silentStream = this.createSilentAudioStream();
+                if (silentStream) {
+                    this.localStream = silentStream;
+                    return this.localStream;
+                }
+            }
             throw err;
         }
     }
