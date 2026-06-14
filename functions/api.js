@@ -23,11 +23,11 @@ export async function onRequest(context) {
         });
     }
 
-    // Clean old offline status (older than 15 seconds)
+    // Clean old offline status (older than 6 seconds)
     try {
-        const fifteenSecsAgo = Math.floor(Date.now() / 1000) - 15;
+        const sixSecsAgo = Math.floor(Date.now() / 1000) - 6;
         await env.DB.prepare("UPDATE units SET status = 'offline' WHERE last_seen < ? AND status = 'online'")
-            .bind(fifteenSecsAgo)
+            .bind(sixSecsAgo)
             .run();
     } catch (e) {
         console.error("Failed to clean offline status:", e);

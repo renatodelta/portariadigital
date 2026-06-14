@@ -369,9 +369,9 @@
             }
         }
 
-        // Load units and poll every 4 seconds to check resident status
+        // Load units and poll every 1.5 seconds to check resident status
         loadUnits();
-        pollingInterval = setInterval(loadUnits, 4000);
+        pollingInterval = setInterval(loadUnits, 1500);
 
         // Request microphone permission upfront to avoid delays during active call
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {

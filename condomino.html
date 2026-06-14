@@ -231,7 +231,7 @@
                 console.error("Ping error:", err);
             }
         }
-        setInterval(sendPing, 4000);
+        setInterval(sendPing, 2000);
 
         function acceptCall() {
             webrtcHandler.answerCall();
@@ -378,15 +378,10 @@
                     renderVisits(visits);
                 }
 
-                // Handle incoming call signal (acts as background push simulation)
+                // Handle incoming call signal (acts as background push simulation and ignores past calls)
                 if (data.calls && data.calls.length > 0) {
                     const latestCall = data.calls[data.calls.length - 1];
                     lastCallId = Math.max(lastCallId, latestCall.id);
-                    
-                    // If modal isn't active, wake it up! (Only if peer is not currently in a call)
-                    if (!document.getElementById('call-modal').classList.contains('active') && !webrtcHandler.currentCall) {
-                        webrtcHandler.onIncomingCall(null);
-                    }
                 }
             } catch (err) {
                 console.error("Polling error:", err);
