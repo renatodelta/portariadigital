@@ -222,6 +222,7 @@ class WebRTCHandler {
      * Plays the incoming stream in the browser.
      */
     playRemoteStream(stream) {
+        console.log("Iniciando reprodução do stream remoto...");
         // Remove existing elements to prevent duplicates
         const existing = document.querySelectorAll('.remote-audio-elem');
         existing.forEach(el => el.remove());
@@ -232,8 +233,17 @@ class WebRTCHandler {
         audio.autoplay = true;
         audio.controls = false;
         
+        // Mobile compatibility attributes
+        audio.setAttribute('autoplay', '');
+        audio.setAttribute('playsinline', '');
+        
         // Enable audio output
         document.body.appendChild(audio);
+
+        // Force play execution
+        audio.play()
+            .then(() => console.log("Áudio remoto reproduzindo com sucesso."))
+            .catch(err => console.error("Falha ao tocar áudio remoto automaticamente:", err));
     }
 }
 

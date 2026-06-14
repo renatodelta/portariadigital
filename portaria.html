@@ -243,8 +243,30 @@
                 
                 renderUnitsGrid(units);
                 populateSelects(units);
+                
+                // If there is an active call, check if it was hung up by the resident
+                if (activeCallId) {
+                    checkActiveCallStatus();
+                }
             } catch (err) {
                 console.error("Error loading units directory:", err);
+            }
+        }
+
+        async function checkActiveCallStatus() {
+            if (!activeCallId) return;
+            try {
+                const res = await fetch(`/api?action=get_call_status&call_id=${activeCallId}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    if (data.call_status === 'completed' || data.call_status === 'declined') {
+                        console.log("Chamada encerrada pelo condômino. Limpando tela...");
+                        webrtcHandler.endCall();
+                        // activeCallId will be reset to null inside webrtcHandler.onCallEnded
+                    }
+                }
+            } catch (e) {
+                console.error("Erro ao verificar status da chamada:", e);
             }
         }
 

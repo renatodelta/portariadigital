@@ -148,6 +148,15 @@ export async function onRequest(context) {
                 return new Response(JSON.stringify({ status: 'error', message: 'Missing params' }), { status: 400, headers: corsHeaders });
             }
 
+            case 'get_call_status': {
+                const call_id = url.searchParams.get('call_id') || '';
+                if (call_id) {
+                    const callRecord = await env.DB.prepare("SELECT status FROM call_signals WHERE id = ?").bind(call_id).first();
+                    return new Response(JSON.stringify({ status: 'success', call_status: callRecord ? callRecord.status : 'unknown' }), { headers: corsHeaders });
+                }
+                return new Response(JSON.stringify({ status: 'error', message: 'Missing call_id' }), { status: 400, headers: corsHeaders });
+            }
+
             // Real-time polling replacement for Server-Sent Events (SSE)
             case 'get_updates': {
                 const unit_id = url.searchParams.get('unit_id') || '';

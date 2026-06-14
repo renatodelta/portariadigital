@@ -275,7 +275,23 @@
         }
 
         function declineCall() {
+            console.log("Desligando chamada via clique...");
             webrtcHandler.endCall();
+            if (activeCallId) {
+                updateCallStatus(activeCallId, 'completed');
+                activeCallId = null;
+            }
+        }
+
+        async function updateCallStatus(callId, status) {
+            try {
+                const fd = new FormData();
+                fd.append('call_id', callId);
+                fd.append('status', status);
+                await fetch('/api?action=update_call', { method: 'POST', body: fd });
+            } catch (e) {
+                console.error("Erro ao atualizar status da chamada:", e);
+            }
         }
 
         function closeCallModal() {
@@ -355,6 +371,23 @@
         // Short-polling function (wakes up UI in real time on Cloudflare)
         async function checkUpdates() {
             try {
+                // If we have an active call, check if the portaria hung up
+                if (activeCallId) {
+                    try {
+                        const statusRes = await fetch(`/api?action=get_call_status&call_id=${activeCallId}`);
+                        const statusData = await statusRes.json();
+                        if (statusData.status === 'success') {
+                            if (statusData.call_status === 'completed' || statusData.call_status === 'declined') {
+                                console.log("Chamada encerrada pela portaria (Status: " + statusData.call_status + "). Desconectando...");
+                                webrtcHandler.endCall();
+                                activeCallId = null;
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Erro ao verificar status da chamada:", e);
+                    }
+                }
+
                 const res = await fetch(`/api?action=get_updates&unit_id=${unitId}&last_delivery_id=${lastDeliveryId}&last_visit_id=${lastVisitId}&last_call_id=${lastCallId}`);
                 const data = await res.json();
 
@@ -419,6 +452,7 @@
                 if (data.calls && data.calls.length > 0) {
                     const latestCall = data.calls[data.calls.length - 1];
                     lastCallId = Math.max(lastCallId, latestCall.id);
+                    activeCallId = latestCall.id; // Track the database call ID
                 }
             } catch (err) {
                 console.error("Polling error:", err);
