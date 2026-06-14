@@ -163,14 +163,14 @@
         let activeCallId = null;
 
         // Initialize WebRTC callbacks
-        webrtcHandler.onConnectionStatus = (status) => {
+        webrtcHandler.onConnectionStatus = (status, errorType) => {
             const badge = document.getElementById('connection-badge');
             if (status === 'online') {
                 badge.className = 'badge badge-success';
                 badge.textContent = 'Portaria Conectada';
             } else {
                 badge.className = 'badge badge-danger';
-                badge.textContent = 'Erro de Conexão';
+                badge.textContent = 'Erro: ' + (errorType || 'Desconhecido');
             }
         };
 
@@ -194,8 +194,8 @@
             }
         };
 
-        // Initialize Peer connection
-        webrtcHandler.init('portaria_digital_portaria');
+        // Initialize Peer connection dynamically (no fixed ID)
+        webrtcHandler.init();
 
         // Load units from Cloudflare Worker
         async function loadUnits() {
