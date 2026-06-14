@@ -15,17 +15,27 @@ class WebRTCHandler {
         this.onConnectionStatus = null;
     }
 
-    /**
-     * Initializes the PeerJS instance.
-     * @param {string} peerId - The fixed ID for this client.
-     */
     init(peerId) {
         console.log("Initializing PeerJS with ID:", peerId);
         
-        // Connect to PeerJS public cloud server
-        this.peer = new Peer(peerId, {
-            debug: 1 // Print only errors
-        });
+        const options = {
+            debug: 1,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun.services.mozilla.com' }
+                ]
+            }
+        };
+
+        // If peerId is supplied, use it. Otherwise, let PeerJS generate a dynamic ID
+        if (peerId) {
+            this.peer = new Peer(peerId, options);
+        } else {
+            this.peer = new Peer(options);
+        }
 
         this.peer.on('open', (id) => {
             console.log('Connected to signaling server. My Peer ID is:', id);
