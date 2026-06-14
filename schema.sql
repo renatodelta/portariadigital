@@ -1,5 +1,3 @@
--- Schema for Cloudflare D1 (SQLite)
-
 CREATE TABLE IF NOT EXISTS units (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -28,11 +26,10 @@ CREATE TABLE IF NOT EXISTS visits (
 CREATE TABLE IF NOT EXISTS call_signals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     unit_id TEXT NOT NULL,
-    status TEXT NOT NULL, /* ringing, accepted, declined, completed */
+    status TEXT NOT NULL,
     created_at INTEGER
 );
 
--- Seed Initial Data
 INSERT OR IGNORE INTO units (id, name) VALUES ('101', 'Casa 101 - Família Silva');
 INSERT OR IGNORE INTO units (id, name) VALUES ('102', 'Casa 102 - Dr. Renato');
 INSERT OR IGNORE INTO units (id, name) VALUES ('103', 'Casa 103 - Mariana & João');
