@@ -44,7 +44,25 @@ class WebRTCHandler {
         // Listen for incoming calls (for Condômino/Resident)
         this.peer.on('call', (call) => {
             console.log('Incoming call from:', call.peer);
+            
+            // Safety clean: If there's already an active call, terminate it first
+            if (this.currentCall) {
+                console.log('Cleaning up previous active call before taking new one.');
+                this.endCall();
+            }
+            
             this.currentCall = call;
+            
+            // Listen for remote close
+            this.currentCall.on('close', () => {
+                console.log('Call closed event received');
+                this.endCall();
+            });
+
+            this.currentCall.on('error', (err) => {
+                console.error('Call error event received:', err);
+                this.endCall();
+            });
             
             if (this.onIncomingCall) {
                 this.onIncomingCall(call);

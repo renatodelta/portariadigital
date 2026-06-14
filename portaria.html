@@ -366,6 +366,18 @@
         // Load units and poll every 4 seconds to check resident status
         loadUnits();
         pollingInterval = setInterval(loadUnits, 4000);
+
+        // Request microphone permission upfront to avoid delays during active call
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    console.log("Microphone permission pre-approved.");
+                    stream.getTracks().forEach(track => track.stop());
+                })
+                .catch(err => {
+                    console.warn("Microphone permission denied upfront:", err);
+                });
+        }
     </script>
 </body>
 </html>

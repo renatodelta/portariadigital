@@ -397,6 +397,19 @@
         if ('Notification' in window && Notification.permission !== "granted") {
             Notification.requestPermission();
         }
+
+        // Request microphone permission upfront to avoid delays during incoming calls
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    console.log("Microphone permission pre-approved.");
+                    // Release the micro immediately but permission is saved in browser settings
+                    stream.getTracks().forEach(track => track.stop());
+                })
+                .catch(err => {
+                    console.warn("Microphone permission denied or not available upfront:", err);
+                });
+        }
     </script>
 </body>
 </html>
