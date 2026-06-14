@@ -1,8 +1,8 @@
 const CACHE_NAME = 'portaria-digital-v1';
 const ASSETS = [
-  'index.php',
-  'portaria.php',
-  'condomino.php',
+  'index.html',
+  'portaria.html',
+  'condomino.html',
   'assets/css/style.css',
   'assets/js/audio-helper.js',
   'manifest.json'
@@ -35,7 +35,7 @@ self.addEventListener('activate', e => {
 // Fetch Event
 self.addEventListener('fetch', e => {
   // Check if request is SSE or external WebRTC, bypass cache
-  if (e.request.url.includes('api.php') || e.request.url.includes('peerjs')) {
+  if (e.request.url.includes('/functions/api') || e.request.url.includes('peerjs')) {
     return fetch(e.request);
   }
   
@@ -64,7 +64,7 @@ self.addEventListener('push', event => {
     badge: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png',
     vibrate: [200, 100, 200, 100, 200, 100, 400],
     data: {
-      url: data.url || 'condomino.php',
+      url: data.url || 'condomino.html',
       action: data.action || 'incoming_call'
     },
     actions: [

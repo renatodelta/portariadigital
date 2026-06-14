@@ -67,7 +67,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
             Portaria<span>Digital</span>
         </div>
-        <span class="badge badge-accent">V1.0.0</span>
+        <span class="badge badge-accent">Cloudflare Serverless V2</span>
     </header>
 
     <div class="container">
@@ -79,7 +79,7 @@
 
             <div class="cards-selection">
                 <!-- Portaria Card -->
-                <div class="card select-card" onclick="window.location.href='portaria.php'">
+                <div class="card select-card" onclick="window.location.href='portaria.html'">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                         <path d="M12 2v9" />
@@ -119,8 +119,8 @@
     </div>
 
     <script>
-        // Load houses list
-        fetch('api.php?action=list_units')
+        // Load houses list from Cloudflare Functions API
+        fetch('/functions/api?action=list_units')
             .then(res => res.json())
             .then(data => {
                 const select = document.getElementById('house-select');
@@ -130,12 +130,15 @@
                     opt.textContent = unit.name;
                     select.appendChild(opt);
                 });
+            })
+            .catch(err => {
+                console.error("Error connecting to Cloudflare Worker:", err);
             });
 
         function goToCondominio() {
             const house = document.getElementById('house-select').value;
             if (house) {
-                window.location.href = `condomino.php?unit=${house}`;
+                window.location.href = `condomino.html?unit=${house}`;
             }
         }
     </script>

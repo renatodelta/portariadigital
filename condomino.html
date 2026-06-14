@@ -1,16 +1,9 @@
-<?php
-$unit_id = $_GET['unit'] ?? '';
-if (!$unit_id) {
-    header("Location: index.php");
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portaria Digital - Condômino Casa <?php echo htmlspecialchars($unit_id); ?></title>
+    <title>Portaria Digital - Condômino</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="manifest" href="manifest.json">
     <!-- Load PeerJS library -->
@@ -18,7 +11,6 @@ if (!$unit_id) {
     <script src="assets/js/audio-helper.js"></script>
     <script src="assets/js/webrtc-handler.js"></script>
     <style>
-        /* Extra visual alignments for the phone screen */
         .phone-body {
             background-color: #0b0c10;
         }
@@ -41,7 +33,7 @@ if (!$unit_id) {
 </head>
 <body>
     <header>
-        <div class="logo" style="cursor: pointer;" onclick="window.location.href='index.php'">
+        <div class="logo" style="cursor: pointer;" onclick="window.location.href='index.html'">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
             Portaria<span>Digital</span>
         </div>
@@ -57,7 +49,7 @@ if (!$unit_id) {
                 <div class="phone-header">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <h1 style="font-size: 1.25rem; font-weight: 700; color: white;">Casa <?php echo htmlspecialchars($unit_id); ?></h1>
+                            <h1 id="display-house-name" style="font-size: 1.25rem; font-weight: 700; color: white;">Casa ...</h1>
                             <p id="app-status" style="font-size: 0.8rem; color: var(--color-success); font-weight: 500;">Buscando conexão...</p>
                         </div>
                         <span class="badge badge-success" id="peer-status">Online</span>
@@ -67,7 +59,7 @@ if (!$unit_id) {
                 <!-- Phone Content Area -->
                 <div class="phone-body">
                     
-                    <!-- PWA Installation Banner (Simulated & Real detection) -->
+                    <!-- PWA Installation Banner -->
                     <div id="install-banner" class="install-banner" style="display: none;">
                         <div class="install-banner-text">
                             Instale a <strong>Portaria Digital</strong> no seu celular para receber chamadas em segundo plano.
@@ -139,44 +131,41 @@ if (!$unit_id) {
     </div>
 
     <script>
-        const unitId = <?php echo json_encode($unit_id); ?>;
-        const peerId = 'portaria_digital_casa_' + unitId;
+        // Parse unit ID from URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const unitId = urlParams.get('unit');
         
-        let localStream = null;
+        if (!unitId) {
+            window.location.href = 'index.html';
+        }
 
-        // PWA service worker registration
+        const peerId = 'portaria_digital_casa_' + unitId;
+        document.getElementById('display-house-name').textContent = 'Casa ' + unitId;
+
+        // PWA Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js')
                 .then(reg => {
-                    console.log('Service Worker registrado com sucesso!');
-                    
-                    // Listen for calls accepted from the Service Worker background notifications
+                    console.log('Service Worker registrado!');
                     navigator.serviceWorker.addEventListener('message', event => {
-                        if (event.data.action === 'accept_call') {
-                            acceptCall();
-                        } else if (event.data.action === 'decline_call') {
-                            declineCall();
-                        }
+                        if (event.data.action === 'accept_call') acceptCall();
+                        else if (event.data.action === 'decline_call') declineCall();
                     });
-                })
-                .catch(err => console.warn('Erro ao registrar Service Worker:', err));
+                });
         }
 
-        // PWA Installation prompt
+        // PWA Install Prompt
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('install-banner').style.display = 'flex';
         });
-
         document.getElementById('install-button').addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    document.getElementById('install-banner').style.display = 'none';
-                }
+                if (outcome === 'accepted') document.getElementById('install-banner').style.display = 'none';
                 deferredPrompt = null;
             }
         });
@@ -197,17 +186,14 @@ if (!$unit_id) {
         };
 
         webrtcHandler.onIncomingCall = (call) => {
-            // Wake up and display incoming call UI
             document.getElementById('call-status').textContent = 'Portaria chamando...';
             document.getElementById('btn-accept-call').style.display = 'flex';
             document.getElementById('active-call-animation').style.display = 'none';
             document.getElementById('caller-avatar').classList.add('calling');
             document.getElementById('call-modal').classList.add('active');
             
-            // Start local synthesized ringtone
             audioHelper.startRingtone();
-            
-            // Show device push notification if tab is in background (optional, browser API)
+
             if (document.hidden && Notification.permission === "granted") {
                 new Notification("Chamada da Portaria", {
                     body: "A portaria está ligando para sua casa.",
@@ -218,7 +204,7 @@ if (!$unit_id) {
         };
 
         webrtcHandler.onCallAccepted = () => {
-            document.getElementById('call-status').textContent = 'Chamando... (Conectado)';
+            document.getElementById('call-status').textContent = 'Em Chamada...';
             document.getElementById('btn-accept-call').style.display = 'none';
             document.getElementById('active-call-animation').style.display = 'block';
             document.getElementById('caller-avatar').classList.remove('calling');
@@ -230,23 +216,20 @@ if (!$unit_id) {
             audioHelper.stop();
         };
 
-        // Initialize connection
         webrtcHandler.init(peerId);
 
-        // Ping status to local database to let portaria know we are online
+        // Ping backend to let portaria know we are active
         async function sendPing() {
             try {
-                await fetch(`api.php?action=ping&unit_id=${unitId}&peer_id=${peerId}`);
+                await fetch(`/functions/api?action=ping&unit_id=${unitId}&peer_id=${peerId}`);
             } catch (err) {
                 console.error("Ping error:", err);
             }
         }
         sendPing();
-        setInterval(sendPing, 4000); // Send ping every 4 seconds (database cleans up after 10s)
+        setInterval(sendPing, 4000);
 
-        // WebRTC control actions
         function acceptCall() {
-            // Answer call
             webrtcHandler.answerCall();
         }
 
@@ -259,23 +242,13 @@ if (!$unit_id) {
             audioHelper.stop();
         }
 
-        // Load and Listen for events (Deliveries, Visitors) in Real Time via SSE
-        async function loadDeliveries() {
-            try {
-                const res = await fetch(`api.php?action=list_deliveries&unit_id=${unitId}`);
-                const data = await res.json();
-                renderDeliveries(data);
-            } catch (e) {}
-        }
+        // State trackers for D1 short polling
+        let lastDeliveryId = 0;
+        let lastVisitId = 0;
+        let lastCallId = 0;
+        let firstLoad = true;
 
-        async function loadVisits() {
-            try {
-                const res = await fetch(`api.php?action=list_visits&unit_id=${unitId}`);
-                const data = await res.json();
-                renderVisits(data);
-            } catch (e) {}
-        }
-
+        // Render functions
         function renderDeliveries(deliveries) {
             const list = document.getElementById('deliveries-list');
             const pending = deliveries.filter(d => d.status === 'pending');
@@ -327,47 +300,103 @@ if (!$unit_id) {
             const fd = new FormData();
             fd.append('id', id);
             try {
-                const res = await fetch('api.php?action=confirm_delivery', { method: 'POST', body: fd });
+                const res = await fetch('/functions/api?action=confirm_delivery', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    loadDeliveries();
+                    // Force refresh
+                    const fetchRes = await fetch(`/functions/api?action=list_deliveries&unit_id=${unitId}`);
+                    const deliveries = await fetchRes.json();
+                    renderDeliveries(deliveries);
                 }
             } catch (e) {}
         }
 
-        // Request notifications permission
+        // Short-polling function (wakes up UI in real time on Cloudflare)
+        async function checkUpdates() {
+            try {
+                const res = await fetch(`/functions/api?action=get_updates&unit_id=${unitId}&last_delivery_id=${lastDeliveryId}&last_visit_id=${lastVisitId}&last_call_id=${lastCallId}`);
+                const data = await res.json();
+
+                if (firstLoad) {
+                    firstLoad = false;
+                    // On initial load, fetch full lists
+                    const [delRes, visRes] = await Promise.all([
+                        fetch(`/functions/api?action=list_deliveries&unit_id=${unitId}`),
+                        fetch(`/functions/api?action=list_visits&unit_id=${unitId}`)
+                    ]);
+                    const deliveries = await delRes.json();
+                    const visits = await visRes.json();
+                    
+                    renderDeliveries(deliveries);
+                    renderVisits(visits);
+
+                    // Update trackers to ignore past events
+                    if (deliveries.length > 0) lastDeliveryId = Math.max(...deliveries.map(d => d.id));
+                    if (visits.length > 0) lastVisitId = Math.max(...visits.map(v => v.id));
+                    
+                    // Set call tracker to max call id
+                    const callLogs = data.calls || [];
+                    if (callLogs.length > 0) lastCallId = Math.max(...callLogs.map(c => c.id));
+                    return;
+                }
+
+                // Handle new deliveries
+                if (data.deliveries && data.deliveries.length > 0) {
+                    data.deliveries.forEach(del => {
+                        if (Notification.permission === "granted") {
+                            new Notification("Nova Encomenda na Portaria!", {
+                                body: `${del.description} entregue por ${del.courier}.`,
+                                icon: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png'
+                            });
+                        }
+                        lastDeliveryId = Math.max(lastDeliveryId, del.id);
+                    });
+                    // Refresh display list
+                    const delRes = await fetch(`/functions/api?action=list_deliveries&unit_id=${unitId}`);
+                    const deliveries = await delRes.json();
+                    renderDeliveries(deliveries);
+                }
+
+                // Handle new visits
+                if (data.visits && data.visits.length > 0) {
+                    data.visits.forEach(vis => {
+                        if (Notification.permission === "granted") {
+                            new Notification("Alerta de Visitante", {
+                                body: `${vis.visitor_name} está na portaria.`,
+                                icon: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png'
+                            });
+                        }
+                        lastVisitId = Math.max(lastVisitId, vis.id);
+                    });
+                    // Refresh display list
+                    const visRes = await fetch(`/functions/api?action=list_visits&unit_id=${unitId}`);
+                    const visits = await visRes.json();
+                    renderVisits(visits);
+                }
+
+                // Handle incoming call signal (acts as background push simulation)
+                if (data.calls && data.calls.length > 0) {
+                    const latestCall = data.calls[data.calls.length - 1];
+                    lastCallId = Math.max(lastCallId, latestCall.id);
+                    
+                    // If modal isn't active, wake it up! (Only if peer is not currently in a call)
+                    if (!document.getElementById('call-modal').classList.contains('active') && !webrtcHandler.currentCall) {
+                        webrtcHandler.onIncomingCall(null);
+                    }
+                }
+            } catch (err) {
+                console.error("Polling error:", err);
+            }
+        }
+
+        // Start polling updates every 3 seconds
+        setInterval(checkUpdates, 3000);
+        checkUpdates();
+
+        // Notification permission request
         if ('Notification' in window && Notification.permission !== "granted") {
             Notification.requestPermission();
         }
-
-        // Connect SSE for Real-Time UI wakeups and notifications
-        const eventSource = new EventSource(`api.php?action=events&unit_id=${unitId}`);
-        
-        eventSource.addEventListener('delivery', event => {
-            const delivery = JSON.parse(event.data);
-            loadDeliveries();
-            if (Notification.permission === "granted") {
-                new Notification("Nova Encomenda na Portaria!", {
-                    body: `${delivery.description} entregue por ${delivery.courier}.`,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png'
-                });
-            }
-        });
-
-        eventSource.addEventListener('visit', event => {
-            const visit = JSON.parse(event.data);
-            loadVisits();
-            if (Notification.permission === "granted") {
-                new Notification("Alerta de Visitante", {
-                    body: `${visit.visitor_name} está na portaria.`,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png'
-                });
-            }
-        });
-
-        // Initialize page logs
-        loadDeliveries();
-        loadVisits();
     </script>
 </body>
 </html>
