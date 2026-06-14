@@ -24,6 +24,10 @@ class WebRTCHandler {
         
         // Connect to PeerJS public cloud server
         this.peer = new Peer(peerId, {
+            host: '0.peerjs.com',
+            port: 443,
+            path: '/',
+            secure: true,
             debug: 1 // Print only errors
         });
 

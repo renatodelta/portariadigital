@@ -171,7 +171,7 @@
         });
 
         // Initialize WebRTC Handlers
-        webrtcHandler.onConnectionStatus = (status) => {
+        webrtcHandler.onConnectionStatus = (status, errorType) => {
             const badge = document.getElementById('peer-status');
             const appStatus = document.getElementById('app-status');
             if (status === 'online') {
@@ -181,7 +181,7 @@
             } else {
                 badge.className = 'badge badge-danger';
                 badge.textContent = 'Erro';
-                appStatus.textContent = 'Erro de sinalização';
+                appStatus.textContent = 'Erro de sinalização: ' + (errorType || 'Desconhecido');
             }
         };
 
