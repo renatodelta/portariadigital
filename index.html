@@ -120,7 +120,7 @@
 
     <script>
         // Load houses list from Cloudflare Functions API
-        fetch('/functions/api?action=list_units')
+        fetch('/api?action=list_units')
             .then(res => res.json())
             .then(data => {
                 const select = document.getElementById('house-select');

@@ -200,7 +200,7 @@
         // Load units from Cloudflare Worker
         async function loadUnits() {
             try {
-                const res = await fetch('/functions/api?action=list_units');
+                const res = await fetch('/api?action=list_units');
                 const units = await res.json();
                 unitsData = units;
                 
@@ -274,7 +274,7 @@
             try {
                 const fd = new FormData();
                 fd.append('unit_id', unitId);
-                const callRes = await fetch('/functions/api?action=trigger_call', { method: 'POST', body: fd });
+                const callRes = await fetch('/api?action=trigger_call', { method: 'POST', body: fd });
                 const callData = await callRes.json();
                 if (callData.status === 'success') {
                     activeCallId = callData.call_id;
@@ -311,7 +311,7 @@
             const fd = new FormData();
             fd.append('call_id', callId);
             fd.append('status', status);
-            await fetch('/functions/api?action=update_call', { method: 'POST', body: fd });
+            await fetch('/api?action=update_call', { method: 'POST', body: fd });
         }
 
         // Encomendas e Visitantes Form Handlers
@@ -327,7 +327,7 @@
             fd.append('courier', courier);
 
             try {
-                const res = await fetch('/functions/api?action=add_delivery', { method: 'POST', body: fd });
+                const res = await fetch('/api?action=add_delivery', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
                     alert('Encomenda registrada e notificada!');
@@ -350,7 +350,7 @@
             fd.append('visitor_name', name);
 
             try {
-                const res = await fetch('/functions/api?action=add_visit', { method: 'POST', body: fd });
+                const res = await fetch('/api?action=add_visit', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
                     alert('Visitante anunciado com sucesso!');

@@ -221,7 +221,7 @@
         // Ping backend to let portaria know we are active
         async function sendPing() {
             try {
-                await fetch(`/functions/api?action=ping&unit_id=${unitId}&peer_id=${peerId}`);
+                await fetch(`/api?action=ping&unit_id=${unitId}&peer_id=${peerId}`);
             } catch (err) {
                 console.error("Ping error:", err);
             }
@@ -300,11 +300,11 @@
             const fd = new FormData();
             fd.append('id', id);
             try {
-                const res = await fetch('/functions/api?action=confirm_delivery', { method: 'POST', body: fd });
+                const res = await fetch('/api?action=confirm_delivery', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
                     // Force refresh
-                    const fetchRes = await fetch(`/functions/api?action=list_deliveries&unit_id=${unitId}`);
+                    const fetchRes = await fetch(`/api?action=list_deliveries&unit_id=${unitId}`);
                     const deliveries = await fetchRes.json();
                     renderDeliveries(deliveries);
                 }
@@ -314,15 +314,15 @@
         // Short-polling function (wakes up UI in real time on Cloudflare)
         async function checkUpdates() {
             try {
-                const res = await fetch(`/functions/api?action=get_updates&unit_id=${unitId}&last_delivery_id=${lastDeliveryId}&last_visit_id=${lastVisitId}&last_call_id=${lastCallId}`);
+                const res = await fetch(`/api?action=get_updates&unit_id=${unitId}&last_delivery_id=${lastDeliveryId}&last_visit_id=${lastVisitId}&last_call_id=${lastCallId}`);
                 const data = await res.json();
 
                 if (firstLoad) {
                     firstLoad = false;
                     // On initial load, fetch full lists
                     const [delRes, visRes] = await Promise.all([
-                        fetch(`/functions/api?action=list_deliveries&unit_id=${unitId}`),
-                        fetch(`/functions/api?action=list_visits&unit_id=${unitId}`)
+                        fetch(`/api?action=list_deliveries&unit_id=${unitId}`),
+                        fetch(`/api?action=list_visits&unit_id=${unitId}`)
                     ]);
                     const deliveries = await delRes.json();
                     const visits = await visRes.json();
@@ -352,7 +352,7 @@
                         lastDeliveryId = Math.max(lastDeliveryId, del.id);
                     });
                     // Refresh display list
-                    const delRes = await fetch(`/functions/api?action=list_deliveries&unit_id=${unitId}`);
+                    const delRes = await fetch(`/api?action=list_deliveries&unit_id=${unitId}`);
                     const deliveries = await delRes.json();
                     renderDeliveries(deliveries);
                 }
@@ -369,7 +369,7 @@
                         lastVisitId = Math.max(lastVisitId, vis.id);
                     });
                     // Refresh display list
-                    const visRes = await fetch(`/functions/api?action=list_visits&unit_id=${unitId}`);
+                    const visRes = await fetch(`/api?action=list_visits&unit_id=${unitId}`);
                     const visits = await visRes.json();
                     renderVisits(visits);
                 }
