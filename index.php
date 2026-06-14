@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portaria Digital - Comunicação Inteligente</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .selection-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            gap: 2.5rem;
+        }
+        .selection-title {
+            text-align: center;
+        }
+        .selection-title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 0%, var(--color-accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .selection-title p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        .cards-selection {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        @media (min-width: 640px) {
+            .cards-selection {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .select-card {
+            cursor: pointer;
+            text-align: center;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .select-card svg {
+            width: 64px;
+            height: 64px;
+            color: var(--color-accent);
+            transition: var(--transition-smooth);
+        }
+        .select-card:hover svg {
+            transform: scale(1.1);
+            color: #8b5cf6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+            Portaria<span>Digital</span>
+        </div>
+        <span class="badge badge-accent">V1.0.0</span>
+    </header>
+
+    <div class="container">
+        <div class="selection-container">
+            <div class="selection-title">
+                <h1>Selecione seu Perfil</h1>
+                <p>Escolha como deseja interagir com o sistema do condomínio</p>
+            </div>
+
+            <div class="cards-selection">
+                <!-- Portaria Card -->
+                <div class="card select-card" onclick="window.location.href='portaria.php'">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M12 2v9" />
+                        <path d="M8 5h8" />
+                    </svg>
+                    <div>
+                        <h2 class="card-title" style="margin-bottom: 0.5rem;">Portaria / Recepção</h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                            Painel de controle para porteiros realizarem chamadas de voz e registrarem encomendas.
+                        </p>
+                    </div>
+                    <button class="btn btn-primary">Entrar no Painel</button>
+                </div>
+
+                <!-- Condômino Card -->
+                <div class="card select-card" id="condomino-card">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                    <div>
+                        <h2 class="card-title" style="margin-bottom: 0.5rem;">Condômino (Morador)</h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                            Simulador do aplicativo do morador. Receba chamadas de voz e avisos de encomendas.
+                        </p>
+                        <div class="form-group" style="text-align: left;">
+                            <label for="house-select">Escolha a sua Casa:</label>
+                            <select id="house-select" class="form-control" onclick="event.stopPropagation()">
+                                <!-- Dynamic options loaded from API -->
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="goToCondominio()">Entrar como Morador</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load houses list
+        fetch('api.php?action=list_units')
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById('house-select');
+                data.forEach(unit => {
+                    const opt = document.createElement('option');
+                    opt.value = unit.id;
+                    opt.textContent = unit.name;
+                    select.appendChild(opt);
+                });
+            });
+
+        function goToCondominio() {
+            const house = document.getElementById('house-select').value;
+            if (house) {
+                window.location.href = `condomino.php?unit=${house}`;
+            }
+        }
+    </script>
+</body>
+</html>
